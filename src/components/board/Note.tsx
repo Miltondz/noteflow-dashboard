@@ -57,7 +57,7 @@ export function Note({
       className={cn(
         "absolute p-4 cursor-move shadow-lg transition-all duration-200",
         isDragging && "shadow-xl",
-        isExpanded ? "w-64 h-64" : "w-32 h-32"
+        type === "document" ? (isExpanded ? "w-96 h-96" : "w-48 h-48") : (isExpanded ? "w-64 h-64" : "w-32 h-32")
       )}
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
@@ -91,8 +91,11 @@ export function Note({
           <Textarea
             value={content}
             onChange={(e) => onContentChange(id, e.target.value)}
-            className="w-full h-full resize-none border-none focus-visible:ring-0 p-0"
-            placeholder={type === "sticky-note" ? "Add a note..." : "Start typing..."}
+            className={cn(
+              "w-full h-full resize-none border-none focus-visible:ring-0 p-0",
+              type === "document" && "font-serif text-base leading-relaxed"
+            )}
+            placeholder={type === "sticky-note" ? "Add a note..." : "Start typing your document..."}
           />
         )}
       </div>

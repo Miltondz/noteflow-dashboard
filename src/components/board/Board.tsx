@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Note } from "./Note";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NoteData {
   id: string;
@@ -23,19 +24,43 @@ export function Board() {
     );
   };
 
-  const handleAddNote = (type: NoteData["type"]) => {
+  const handleAddNote = async (type: NoteData["type"]) => {
     const newNote: NoteData = {
       id: crypto.randomUUID(),
       type,
       content: type === "sticky-note" 
         ? "New note" 
         : type === "document" 
-        ? "Start typing..." 
+        ? "Start typing your document..." 
         : "Click to add image",
       position: { x: Math.random() * 300, y: Math.random() * 300 },
       isExpanded: true,
     };
-    setNotes((prev) => [...prev, newNote]);
+
+    try {
+      const { data, error } = await supabase
+        .from('dashboard_components')
+        .insert([{
+          type: newNote.type,
+          content: newNote.content,
+          position_x: newNote.position.x,
+          position_y: newNote.position.y,
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        const formattedNote = {
+          ...newNote,
+          id: data.id,
+        };
+        setNotes((prev) => [...prev, formattedNote]);
+      }
+    } catch (error) {
+      console.error('Error adding note:', error);
+    }
   };
 
   const handleContentChange = (id: string, content: string) => {
@@ -55,7 +80,7 @@ export function Board() {
   };
 
   return (
-    <div className="w-full h-full relative bg-gray-50">
+    <div className="w-full h-full relative bg-gray-50 board">
       {notes.map((note) => (
         <Note
           key={note.id}

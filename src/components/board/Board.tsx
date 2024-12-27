@@ -23,6 +23,20 @@ export function Board() {
 
   const createDefaultDashboard = async () => {
     try {
+      // First, get the current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) throw userError;
+      
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to create a dashboard.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Check if user already has a dashboard
       const { data: existingDashboards, error: fetchError } = await supabase
         .from('dashboards')
@@ -43,7 +57,8 @@ export function Board() {
           {
             title: 'My Dashboard',
             description: 'My personal dashboard',
-            is_public: false
+            is_public: false,
+            owner_id: user.id // Include the owner_id
           }
         ])
         .select()

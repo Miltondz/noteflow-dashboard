@@ -7,7 +7,13 @@ const Index = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <Sidebar />
+        <Sidebar onAddNote={(type) => {
+          const board = document.querySelector(".board") as HTMLElement;
+          if (board) {
+            const event = new CustomEvent("addNote", { detail: { type } });
+            board.dispatchEvent(event);
+          }
+        }} />
         <div className="flex-1 flex flex-col">
           <Topbar />
           <Board />

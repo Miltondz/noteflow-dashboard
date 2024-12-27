@@ -1,32 +1,35 @@
 import { Button } from "@/components/ui/button";
 import { Sidebar as ShadcnSidebar, SidebarContent } from "@/components/ui/sidebar";
-import { StickyNote, Image, FileText, Plus } from "lucide-react";
+import { StickyNote, Image, FileText } from "lucide-react";
 
-export function Sidebar() {
-  const tools = [
-    { icon: StickyNote, label: "Sticky Note" },
-    { icon: FileText, label: "Document" },
-    { icon: Image, label: "Image" },
+interface Tool {
+  icon: typeof StickyNote;
+  label: string;
+  type: "sticky-note" | "document" | "image";
+}
+
+export function Sidebar({ onAddNote }: { onAddNote: (type: Tool["type"]) => void }) {
+  const tools: Tool[] = [
+    { icon: StickyNote, label: "Sticky Note", type: "sticky-note" },
+    { icon: FileText, label: "Document", type: "document" },
+    { icon: Image, label: "Image", type: "image" },
   ];
 
   return (
     <ShadcnSidebar>
       <SidebarContent>
         <div className="p-4 space-y-4">
-          {tools.map((Tool, index) => (
+          {tools.map((tool) => (
             <Button
-              key={index}
+              key={tool.type}
               variant="ghost"
               className="w-full justify-start gap-2 hover:bg-primary/10"
+              onClick={() => onAddNote(tool.type)}
             >
-              <Tool.icon className="h-5 w-5" />
-              <span>{Tool.label}</span>
+              <tool.icon className="h-5 w-5" />
+              <span>{tool.label}</span>
             </Button>
           ))}
-          <Button className="w-full gap-2">
-            <Plus className="h-5 w-5" />
-            Add Note
-          </Button>
         </div>
       </SidebarContent>
     </ShadcnSidebar>

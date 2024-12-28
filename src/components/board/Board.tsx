@@ -23,7 +23,6 @@ export function Board() {
 
   const createDefaultDashboard = async () => {
     try {
-      // First, get the current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) throw userError;
@@ -37,7 +36,6 @@ export function Board() {
         return;
       }
 
-      // Check if user already has a dashboard
       const { data: existingDashboards, error: fetchError } = await supabase
         .from('dashboards')
         .select('id')
@@ -50,7 +48,6 @@ export function Board() {
         return;
       }
 
-      // Create a new dashboard if none exists
       const { data: newDashboard, error: createError } = await supabase
         .from('dashboards')
         .insert([
@@ -58,7 +55,7 @@ export function Board() {
             title: 'My Dashboard',
             description: 'My personal dashboard',
             is_public: false,
-            owner_id: user.id // Include the owner_id
+            owner_id: user.id
           }
         ])
         .select()
@@ -116,8 +113,8 @@ export function Board() {
           dashboard_id: dashboardId,
           type: newNote.type,
           content: newNote.content,
-          position_x: newNote.position.x,
-          position_y: newNote.position.y,
+          position_x: Number(newNote.position.x),
+          position_y: Number(newNote.position.y),
         }])
         .select()
         .single();

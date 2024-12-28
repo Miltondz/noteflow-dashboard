@@ -3,6 +3,7 @@ import { Note } from "./Note";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface NoteData {
   id: string;
@@ -27,6 +28,84 @@ export function Board() {
   const [notes, setNotes] = useState<NoteData[]>([]);
   const [dashboardId, setDashboardId] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Query to fetch dashboard components
+  const { data: components } = useQuery({
+    queryKey: ['dashboard-components', dashboardId],
+    queryFn: async () => {
+      if (!dashboardId) return [];
+      const { data, error } = await supabase
+        .from('dashboard_components')
+        .select('*')
+        .eq('dashboard_id', dashboardId);
+      
+      if (error) throw error;
+      
+      return data.map(component => ({
+        id: component.id,
+        type: component.type,
+        content: component.content || '',
+        position: { x: component.position_x, y: component.position_y },
+        isExpanded: true,
+        style: component.style as Record<string, string>,
+      }));
+    },
+    enabled: !!dashboardId,
+  });
+
+  // Update notes when components change
+  useEffect(() => {
+    if (components) {
+      setNotes(components);
+    }
+  }, [components]);
+
+  // Mutation to update component position
+  const updatePositionMutation = useMutation({
+    mutationFn: async ({ id, position }: { id: string, position: { x: number, y: number } }) => {
+      const { error } = await supabase
+        .from('dashboard_components')
+        .update({
+          position_x: position.x,
+          position_y: position.y,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+  });
+
+  // Mutation to update component content
+  const updateContentMutation = useMutation({
+    mutationFn: async ({ id, content }: { id: string, content: string }) => {
+      const { error } = await supabase
+        .from('dashboard_components')
+        .update({
+          content,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+  });
+
+  // Mutation to delete component
+  const deleteComponentMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('dashboard_components')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard-components', dashboardId] });
+    },
+  });
 
   useEffect(() => {
     createDefaultDashboard();
@@ -93,6 +172,7 @@ export function Board() {
         note.id === id ? { ...note, position: newPosition } : note
       )
     );
+    updatePositionMutation.mutate({ id, position: newPosition });
   };
 
   const getRandomStickyNoteColor = () => {
@@ -115,29 +195,20 @@ export function Board() {
       ? { backgroundColor: "#1A1F2C", color: "#ffffff" }
       : {};
 
-    const newNote: NoteData = {
-      id: crypto.randomUUID(),
-      type,
-      content: type === "sticky-note" 
-        ? "New note" 
-        : type === "document" 
-        ? "Start typing your document..." 
-        : "",
-      position: position || { x: Math.random() * 300, y: Math.random() * 300 },
-      isExpanded: true,
-      style,
-    };
-
     try {
       const { data, error } = await supabase
         .from('dashboard_components')
         .insert([{
           dashboard_id: dashboardId,
-          type: newNote.type,
-          content: newNote.content,
-          position_x: Number(newNote.position.x),
-          position_y: Number(newNote.position.y),
-          style: newNote.style,
+          type: type,
+          content: type === "sticky-note" 
+            ? "New note" 
+            : type === "document" 
+            ? "Start typing your document..." 
+            : "",
+          position_x: position?.x || Math.random() * 300,
+          position_y: position?.y || Math.random() * 300,
+          style,
         }])
         .select()
         .single();
@@ -145,11 +216,7 @@ export function Board() {
       if (error) throw error;
 
       if (data) {
-        const formattedNote = {
-          ...newNote,
-          id: data.id,
-        };
-        setNotes((prev) => [...prev, formattedNote]);
+        queryClient.invalidateQueries({ queryKey: ['dashboard-components', dashboardId] });
         toast({
           title: "Success",
           description: `New ${type} added successfully!`,
@@ -171,6 +238,7 @@ export function Board() {
         note.id === id ? { ...note, content } : note
       )
     );
+    updateContentMutation.mutate({ id, content });
   };
 
   const handleToggleExpand = (id: string) => {
@@ -179,6 +247,23 @@ export function Board() {
         note.id === id ? { ...note, isExpanded: !note.isExpanded } : note
       )
     );
+  };
+
+  const handleDeleteNote = async (id: string) => {
+    try {
+      await deleteComponentMutation.mutateAsync(id);
+      toast({
+        title: "Success",
+        description: "Note deleted successfully!",
+      });
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete note. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -213,6 +298,7 @@ export function Board() {
           onMove={handleNoteMove}
           onContentChange={handleContentChange}
           onToggleExpand={handleToggleExpand}
+          onDelete={handleDeleteNote}
         />
       ))}
     </div>

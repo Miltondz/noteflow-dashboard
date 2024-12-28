@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Minimize2, Maximize2, Upload } from "lucide-react";
+import { Minimize2, Maximize2, Upload, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -17,6 +17,7 @@ interface NoteProps {
   onMove: (id: string, position: { x: number; y: number }) => void;
   onContentChange: (id: string, content: string) => void;
   onToggleExpand: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 export function Note({ 
@@ -28,7 +29,8 @@ export function Note({
   style = {},
   onMove, 
   onContentChange,
-  onToggleExpand 
+  onToggleExpand,
+  onDelete
 }: NoteProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -110,18 +112,28 @@ export function Note({
     >
       <div className="flex justify-between mb-2">
         <div className="text-sm text-gray-500 capitalize">{type.replace("-", " ")}</div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6"
-          onClick={() => onToggleExpand(id)}
-        >
-          {isExpanded ? (
-            <Minimize2 className="h-4 w-4" />
-          ) : (
-            <Maximize2 className="h-4 w-4" />
-          )}
-        </Button>
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => onDelete(id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => onToggleExpand(id)}
+          >
+            {isExpanded ? (
+              <Minimize2 className="h-4 w-4" />
+            ) : (
+              <Maximize2 className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
       </div>
       <div className="w-full h-[calc(100%-2rem)] overflow-auto">
         {type === "image" ? (

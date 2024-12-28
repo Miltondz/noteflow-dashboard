@@ -19,7 +19,7 @@ export type Database = {
           position_x: number
           position_y: number
           style: Json | null
-          type: string
+          type: Database["public"]["Enums"]["component_type"] | null
           updated_at: string | null
           width: number
         }
@@ -32,7 +32,7 @@ export type Database = {
           position_x?: number
           position_y?: number
           style?: Json | null
-          type: string
+          type?: Database["public"]["Enums"]["component_type"] | null
           updated_at?: string | null
           width?: number
         }
@@ -45,7 +45,7 @@ export type Database = {
           position_x?: number
           position_y?: number
           style?: Json | null
-          type?: string
+          type?: Database["public"]["Enums"]["component_type"] | null
           updated_at?: string | null
           width?: number
         }
@@ -97,7 +97,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      component_type: "sticky-note" | "document" | "image" | "text"
     }
     CompositeTypes: {
       [_ in never]: never

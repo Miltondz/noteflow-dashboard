@@ -10,7 +10,18 @@ interface NoteData {
   content: string;
   position: { x: number; y: number };
   isExpanded?: boolean;
+  style?: Record<string, string>;
 }
+
+const STICKY_NOTE_COLORS = [
+  "#F2FCE2", // Soft Green
+  "#FEF7CD", // Soft Yellow
+  "#FEC6A1", // Soft Orange
+  "#E5DEFF", // Soft Purple
+  "#FFDEE2", // Soft Pink
+  "#FDE1D3", // Soft Peach
+  "#D3E4FD", // Soft Blue
+];
 
 export function Board() {
   const [notes, setNotes] = useState<NoteData[]>([]);
@@ -84,6 +95,10 @@ export function Board() {
     );
   };
 
+  const getRandomStickyNoteColor = () => {
+    return STICKY_NOTE_COLORS[Math.floor(Math.random() * STICKY_NOTE_COLORS.length)];
+  };
+
   const handleAddNote = async (type: NoteData["type"], position?: { x: number; y: number }) => {
     if (!dashboardId) {
       toast({
@@ -94,6 +109,12 @@ export function Board() {
       return;
     }
 
+    const style = type === "sticky-note" 
+      ? { backgroundColor: getRandomStickyNoteColor() }
+      : type === "document" 
+      ? { backgroundColor: "#1A1F2C", color: "#ffffff" }
+      : {};
+
     const newNote: NoteData = {
       id: crypto.randomUUID(),
       type,
@@ -101,9 +122,10 @@ export function Board() {
         ? "New note" 
         : type === "document" 
         ? "Start typing your document..." 
-        : "Click to add image",
+        : "",
       position: position || { x: Math.random() * 300, y: Math.random() * 300 },
       isExpanded: true,
+      style,
     };
 
     try {
@@ -115,6 +137,7 @@ export function Board() {
           content: newNote.content,
           position_x: Number(newNote.position.x),
           position_y: Number(newNote.position.y),
+          style: newNote.style,
         }])
         .select()
         .single();

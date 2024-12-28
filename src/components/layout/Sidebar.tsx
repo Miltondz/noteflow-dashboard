@@ -8,12 +8,17 @@ interface Tool {
   type: "sticky-note" | "document" | "image";
 }
 
-export function Sidebar({ onAddNote }: { onAddNote: (type: Tool["type"]) => void }) {
+export function Sidebar({ onAddNote }: { onAddNote: (type: Tool["type"], position?: { x: number; y: number }) => void }) {
   const tools: Tool[] = [
     { icon: StickyNote, label: "Sticky Note", type: "sticky-note" },
     { icon: FileText, label: "Document", type: "document" },
     { icon: Image, label: "Image", type: "image" },
   ];
+
+  const handleDragStart = (e: React.DragEvent, type: Tool["type"]) => {
+    e.dataTransfer.setData("application/lovable-type", type);
+    e.dataTransfer.effectAllowed = "copy";
+  };
 
   return (
     <ShadcnSidebar>
@@ -23,7 +28,9 @@ export function Sidebar({ onAddNote }: { onAddNote: (type: Tool["type"]) => void
             <Button
               key={tool.type}
               variant="ghost"
-              className="w-full justify-start gap-2 hover:bg-primary/10"
+              className="w-full justify-start gap-2 hover:bg-primary/10 cursor-grab active:cursor-grabbing"
+              draggable
+              onDragStart={(e) => handleDragStart(e, tool.type)}
               onClick={() => onAddNote(tool.type)}
             >
               <tool.icon className="h-5 w-5" />

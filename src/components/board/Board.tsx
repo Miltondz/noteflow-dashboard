@@ -87,7 +87,7 @@ export function Board() {
     );
   };
 
-  const handleAddNote = async (type: NoteData["type"]) => {
+  const handleAddNote = async (type: NoteData["type"], position?: { x: number; y: number }) => {
     if (!dashboardId) {
       toast({
         title: "Error",
@@ -105,7 +105,7 @@ export function Board() {
         : type === "document" 
         ? "Start typing your document..." 
         : "Click to add image",
-      position: { x: Math.random() * 300, y: Math.random() * 300 },
+      position: position || { x: Math.random() * 300, y: Math.random() * 300 },
       isExpanded: true,
     };
 
@@ -161,8 +161,31 @@ export function Board() {
     );
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const type = e.dataTransfer.getData("application/lovable-type") as NoteData["type"];
+    if (!type) return;
+
+    const boardRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const position = {
+      x: e.clientX - boardRect.left,
+      y: e.clientY - boardRect.top,
+    };
+
+    handleAddNote(type, position);
+  };
+
   return (
-    <div className="w-full h-full relative bg-gray-50 board">
+    <div 
+      className="w-full h-full relative bg-gray-50 board"
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
       {notes.map((note) => (
         <Note
           key={note.id}

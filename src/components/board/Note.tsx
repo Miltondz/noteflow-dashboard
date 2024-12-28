@@ -6,19 +6,14 @@ import { Minimize2, Maximize2, Upload, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { NoteData } from "./types";
 
-interface NoteProps {
-  id: string;
-  type: "sticky-note" | "document" | "image";
-  content: string;
-  position: { x: number; y: number };
-  isExpanded?: boolean;
-  style?: Record<string, string>;
+type NoteProps = NoteData & {
   onMove: (id: string, position: { x: number; y: number }) => void;
   onContentChange: (id: string, content: string) => void;
   onToggleExpand: (id: string) => void;
   onDelete: (id: string) => void;
-}
+};
 
 export function Note({ 
   id, 

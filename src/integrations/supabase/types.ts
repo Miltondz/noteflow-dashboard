@@ -56,7 +56,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "dashboards"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       dashboards: {

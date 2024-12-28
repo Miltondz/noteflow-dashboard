@@ -1,111 +1,28 @@
 import { useState, useEffect } from "react";
 import { Note } from "./Note";
-import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
-interface NoteData {
-  id: string;
-  type: "sticky-note" | "document" | "image";
-  content: string;
-  position: { x: number; y: number };
-  isExpanded?: boolean;
-  style?: Record<string, string>;
-}
-
-const STICKY_NOTE_COLORS = [
-  "#F2FCE2", // Soft Green
-  "#FEF7CD", // Soft Yellow
-  "#FEC6A1", // Soft Orange
-  "#E5DEFF", // Soft Purple
-  "#FFDEE2", // Soft Pink
-  "#FDE1D3", // Soft Peach
-  "#D3E4FD", // Soft Blue
-];
+import { NoteData } from "./types";
+import { useBoardQueries } from "./hooks/useBoardQueries";
+import { getRandomStickyNoteColor } from "./utils/boardUtils";
 
 export function Board() {
   const [notes, setNotes] = useState<NoteData[]>([]);
   const [dashboardId, setDashboardId] = useState<string | null>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  
+  const {
+    components,
+    updatePositionMutation,
+    updateContentMutation,
+    deleteComponentMutation,
+  } = useBoardQueries(dashboardId);
 
-  // Query to fetch dashboard components
-  const { data: components } = useQuery({
-    queryKey: ['dashboard-components', dashboardId],
-    queryFn: async () => {
-      if (!dashboardId) return [];
-      const { data, error } = await supabase
-        .from('dashboard_components')
-        .select('*')
-        .eq('dashboard_id', dashboardId);
-      
-      if (error) throw error;
-      
-      return data.map(component => ({
-        id: component.id,
-        type: component.type,
-        content: component.content || '',
-        position: { x: component.position_x, y: component.position_y },
-        isExpanded: true,
-        style: component.style as Record<string, string>,
-      }));
-    },
-    enabled: !!dashboardId,
-  });
-
-  // Update notes when components change
   useEffect(() => {
     if (components) {
       setNotes(components);
     }
   }, [components]);
-
-  // Mutation to update component position
-  const updatePositionMutation = useMutation({
-    mutationFn: async ({ id, position }: { id: string, position: { x: number, y: number } }) => {
-      const { error } = await supabase
-        .from('dashboard_components')
-        .update({
-          position_x: position.x,
-          position_y: position.y,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-  });
-
-  // Mutation to update component content
-  const updateContentMutation = useMutation({
-    mutationFn: async ({ id, content }: { id: string, content: string }) => {
-      const { error } = await supabase
-        .from('dashboard_components')
-        .update({
-          content,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-  });
-
-  // Mutation to delete component
-  const deleteComponentMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('dashboard_components')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dashboard-components', dashboardId] });
-    },
-  });
 
   useEffect(() => {
     createDefaultDashboard();
@@ -175,10 +92,6 @@ export function Board() {
     updatePositionMutation.mutate({ id, position: newPosition });
   };
 
-  const getRandomStickyNoteColor = () => {
-    return STICKY_NOTE_COLORS[Math.floor(Math.random() * STICKY_NOTE_COLORS.length)];
-  };
-
   const handleAddNote = async (type: NoteData["type"], position?: { x: number; y: number }) => {
     if (!dashboardId) {
       toast({
@@ -216,7 +129,6 @@ export function Board() {
       if (error) throw error;
 
       if (data) {
-        queryClient.invalidateQueries({ queryKey: ['dashboard-components', dashboardId] });
         toast({
           title: "Success",
           description: `New ${type} added successfully!`,
@@ -247,23 +159,6 @@ export function Board() {
         note.id === id ? { ...note, isExpanded: !note.isExpanded } : note
       )
     );
-  };
-
-  const handleDeleteNote = async (id: string) => {
-    try {
-      await deleteComponentMutation.mutateAsync(id);
-      toast({
-        title: "Success",
-        description: "Note deleted successfully!",
-      });
-    } catch (error) {
-      console.error('Error deleting note:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete note. Please try again.",
-        variant: "destructive",
-      });
-    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -298,7 +193,7 @@ export function Board() {
           onMove={handleNoteMove}
           onContentChange={handleContentChange}
           onToggleExpand={handleToggleExpand}
-          onDelete={handleDeleteNote}
+          onDelete={(id) => deleteComponentMutation.mutate(id)}
         />
       ))}
     </div>

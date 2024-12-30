@@ -48,7 +48,7 @@ export function BoardHeader({ dashboardId }: BoardHeaderProps) {
         variant="outline"
         size="sm"
         onClick={handleSaveAll}
-        className="bg-white shadow-sm"
+        className="bg-background border shadow-sm"
       >
         <SaveAll className="h-4 w-4 mr-2" />
         Save All

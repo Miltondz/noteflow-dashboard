@@ -21,7 +21,7 @@ export function Sidebar({ onAddNote }: { onAddNote: (type: Tool["type"], positio
   };
 
   return (
-    <ShadcnSidebar defaultOpen={false}>
+    <ShadcnSidebar className="w-[52px]">
       <SidebarContent>
         <div className="p-2 space-y-2">
           {tools.map((tool) => (

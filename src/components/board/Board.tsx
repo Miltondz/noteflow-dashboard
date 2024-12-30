@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { NoteData } from "./types";
 import { useBoardQueries } from "./hooks/useBoardQueries";
 import { getRandomStickyNoteColor } from "./utils/boardUtils";
+import { BoardHeader } from "./components/BoardHeader";
 
 export function Board() {
   const [notes, setNotes] = useState<NoteData[]>([]);
@@ -186,6 +187,7 @@ export function Board() {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
+      <BoardHeader dashboardId={dashboardId} />
       {notes.map((note) => (
         <Note
           key={note.id}

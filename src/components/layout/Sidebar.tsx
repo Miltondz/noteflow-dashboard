@@ -21,20 +21,21 @@ export function Sidebar({ onAddNote }: { onAddNote: (type: Tool["type"], positio
   };
 
   return (
-    <ShadcnSidebar>
+    <ShadcnSidebar defaultOpen={false}>
       <SidebarContent>
-        <div className="p-4 space-y-4">
+        <div className="p-2 space-y-2">
           {tools.map((tool) => (
             <Button
               key={tool.type}
               variant="ghost"
-              className="w-full justify-start gap-2 hover:bg-primary/10 cursor-grab active:cursor-grabbing"
+              size="icon"
+              className="w-8 h-8 hover:bg-primary/10 cursor-grab active:cursor-grabbing"
               draggable
               onDragStart={(e) => handleDragStart(e, tool.type)}
               onClick={() => onAddNote(tool.type)}
+              title={tool.label}
             >
               <tool.icon className="h-5 w-5" />
-              <span>{tool.label}</span>
             </Button>
           ))}
         </div>

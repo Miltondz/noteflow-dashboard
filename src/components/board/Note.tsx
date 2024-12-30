@@ -1,12 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Minimize2, Maximize2, Upload, Trash2, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { NoteData } from "./types";
+import { NoteHeader } from "./components/NoteHeader";
+import { NoteContent } from "./components/NoteContent";
 
 type NoteProps = NoteData & {
   onMove: (id: string, position: { x: number; y: number }) => void;
@@ -31,29 +30,50 @@ export function Note({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const noteRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      
+      e.preventDefault();
+      onMove(id, {
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      });
+    };
+
+    const handleMouseUp = () => {
+      if (isDragging) {
+        setIsDragging(false);
+        document.body.style.userSelect = '';
+      }
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = 'none';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging, dragStart, id, onMove]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).tagName === "TEXTAREA") return;
+    if (!(e.target as HTMLElement).closest('.note-header')) return;
     
+    e.preventDefault();
     setIsDragging(true);
     setDragStart({
       x: e.clientX - position.x,
       y: e.clientY - position.y,
     });
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    
-    onMove(id, {
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y,
-    });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
   };
 
   const handleSave = async () => {
@@ -119,58 +139,13 @@ export function Note({
     }
   };
 
-  const renderContent = () => {
-    if (type === "image") {
-      return (
-        <div 
-          className="w-full h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          {content ? (
-            <img src={content} alt="Note" className="w-full h-full object-cover" />
-          ) : (
-            <>
-              <Upload className="w-8 h-8 mb-2" />
-              <span>Click to upload image</span>
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                accept="image/*"
-                onChange={handleImageUpload}
-              />
-            </>
-          )}
-        </div>
-      );
-    }
-
-    return (
-      <Textarea
-        value={content}
-        onChange={(e) => onContentChange(id, e.target.value)}
-        className={cn(
-          "w-full h-full resize-none border-none focus-visible:ring-0 p-0",
-          type === "document" && "font-serif text-base leading-relaxed bg-transparent",
-          type === "text" && "text-base leading-relaxed"
-        )}
-        placeholder={
-          type === "sticky-note" 
-            ? "Add a note..." 
-            : type === "document" 
-            ? "Start typing your document..." 
-            : "Start typing..."
-        }
-        style={type === "document" ? { color: "inherit" } : undefined}
-      />
-    );
-  };
-
   return (
     <Card
+      ref={noteRef}
       className={cn(
-        "absolute p-4 cursor-move shadow-lg transition-all duration-200",
-        isDragging && "shadow-xl",
+        "absolute p-4 shadow-lg transition-all duration-200",
+        isDragging && "shadow-xl cursor-grabbing",
+        !isDragging && "cursor-default",
         type === "document" ? (isExpanded ? "w-96 h-96" : "w-48 h-48") : (isExpanded ? "w-64 h-64" : "w-32 h-32")
       )}
       style={{
@@ -178,46 +153,25 @@ export function Note({
         ...style,
       }}
       onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
     >
-      <div className="flex justify-between mb-2">
-        <div className="text-sm text-gray-500 capitalize">{type.replace("-", " ")}</div>
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            onClick={handleSave}
-            disabled={isSaving}
-          >
-            <Save className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            onClick={() => onDelete(id)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            onClick={() => onToggleExpand(id)}
-          >
-            {isExpanded ? (
-              <Minimize2 className="h-4 w-4" />
-            ) : (
-              <Maximize2 className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
+      <div className="note-header">
+        <NoteHeader
+          type={type}
+          isExpanded={isExpanded}
+          isSaving={isSaving}
+          onSave={handleSave}
+          onDelete={() => onDelete(id)}
+          onToggleExpand={() => onToggleExpand(id)}
+        />
       </div>
       <div className="w-full h-[calc(100%-2rem)] overflow-auto">
-        {renderContent()}
+        <NoteContent
+          type={type}
+          content={content}
+          onContentChange={(content) => onContentChange(id, content)}
+          fileInputRef={fileInputRef}
+          handleImageUpload={handleImageUpload}
+        />
       </div>
     </Card>
   );

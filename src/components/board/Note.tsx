@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Minimize2, Maximize2, Upload, Trash2 } from "lucide-react";
+import { Minimize2, Maximize2, Upload, Trash2, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -29,6 +29,7 @@ export function Note({
 }: NoteProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -53,6 +54,35 @@ export function Note({
 
   const handleMouseUp = () => {
     setIsDragging(false);
+  };
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      const { error } = await supabase
+        .from('dashboard_components')
+        .update({
+          content,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Changes saved successfully!",
+      });
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save changes. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,6 +185,15 @@ export function Note({
       <div className="flex justify-between mb-2">
         <div className="text-sm text-gray-500 capitalize">{type.replace("-", " ")}</div>
         <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            <Save className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"

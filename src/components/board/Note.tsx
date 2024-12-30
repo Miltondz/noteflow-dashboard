@@ -89,6 +89,53 @@ export function Note({
     }
   };
 
+  const renderContent = () => {
+    if (type === "image") {
+      return (
+        <div 
+          className="w-full h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {content ? (
+            <img src={content} alt="Note" className="w-full h-full object-cover" />
+          ) : (
+            <>
+              <Upload className="w-8 h-8 mb-2" />
+              <span>Click to upload image</span>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageUpload}
+              />
+            </>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <Textarea
+        value={content}
+        onChange={(e) => onContentChange(id, e.target.value)}
+        className={cn(
+          "w-full h-full resize-none border-none focus-visible:ring-0 p-0",
+          type === "document" && "font-serif text-base leading-relaxed bg-transparent",
+          type === "text" && "text-base leading-relaxed"
+        )}
+        placeholder={
+          type === "sticky-note" 
+            ? "Add a note..." 
+            : type === "document" 
+            ? "Start typing your document..." 
+            : "Start typing..."
+        }
+        style={type === "document" ? { color: "inherit" } : undefined}
+      />
+    );
+  };
+
   return (
     <Card
       className={cn(
@@ -131,39 +178,7 @@ export function Note({
         </div>
       </div>
       <div className="w-full h-[calc(100%-2rem)] overflow-auto">
-        {type === "image" ? (
-          <div 
-            className="w-full h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {content ? (
-              <img src={content} alt="Note" className="w-full h-full object-cover" />
-            ) : (
-              <>
-                <Upload className="w-8 h-8 mb-2" />
-                <span>Click to upload image</span>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
-              </>
-            )}
-          </div>
-        ) : (
-          <Textarea
-            value={content}
-            onChange={(e) => onContentChange(id, e.target.value)}
-            className={cn(
-              "w-full h-full resize-none border-none focus-visible:ring-0 p-0",
-              type === "document" && "font-serif text-base leading-relaxed bg-transparent"
-            )}
-            placeholder={type === "sticky-note" ? "Add a note..." : "Start typing your document..."}
-            style={type === "document" ? { color: "inherit" } : undefined}
-          />
-        )}
+        {renderContent()}
       </div>
     </Card>
   );

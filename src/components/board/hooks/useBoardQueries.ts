@@ -11,6 +11,7 @@ export const useBoardQueries = (dashboardId: string | null) => {
     queryKey: ['dashboard-components', dashboardId],
     queryFn: async () => {
       if (!dashboardId) return [];
+      
       const { data, error } = await supabase
         .from('dashboard_components')
         .select('*')
@@ -21,7 +22,13 @@ export const useBoardQueries = (dashboardId: string | null) => {
       return data.map(component => ({
         id: component.id,
         type: component.type,
-        content: component.content || '',
+        content: component.type === 'image' 
+          ? component.content || '' // For images, keep the URL or empty string
+          : component.type === 'text'
+          ? component.content || 'Start typing...' // For text components
+          : component.type === 'document'
+          ? component.content || 'Start typing your document...' // For documents
+          : component.content || 'New note', // For sticky notes
         position: { x: component.position_x, y: component.position_y },
         isExpanded: true,
         style: component.style as Record<string, string>,

@@ -23,7 +23,7 @@ export function Topbar() {
           <Share2 className="h-4 w-4 mr-2" />
           Share
         </Button>
-        <Button variant="ghost" size="icon" size="sm" onClick={toggleTheme}>
+        <Button variant="ghost" size="icon" onClick={toggleTheme}>
           {theme === 'dark' ? (
             <Sun className="h-4 w-4" />
           ) : (

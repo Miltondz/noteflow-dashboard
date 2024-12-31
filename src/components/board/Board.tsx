@@ -209,7 +209,7 @@ export function Board() {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <BoardHeader dashboardId={dashboardId} />
+      <BoardHeader dashboardId={dashboardId} notes={notes} />
       <div className="absolute top-4 right-4 z-10">
         <AlertDialog>
           <AlertDialogTrigger asChild>

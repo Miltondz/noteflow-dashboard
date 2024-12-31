@@ -1,15 +1,15 @@
 import { Button } from "@/components/ui/button";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
+  AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
+  AlertDialogCancel,
+  AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 import { NoteData } from "../types";
 
 interface BoardActionsProps {
@@ -19,7 +19,12 @@ interface BoardActionsProps {
 
 export function BoardActions({ onCleanDashboard }: BoardActionsProps) {
   return (
-    <AlertDialog>
+    <>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -35,6 +40,6 @@ export function BoardActions({ onCleanDashboard }: BoardActionsProps) {
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
-    </AlertDialog>
+    </>
   );
 }

@@ -144,7 +144,6 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
       if (error) throw error;
 
       if (data) {
-        // Invalidate the query to refresh the dashboard
         queryClient.invalidateQueries({ queryKey: ['dashboard-components', dashboardId] });
         toast({
           title: "Success",
@@ -208,7 +207,7 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <BoardHeader dashboardId={dashboardId} />
+      <BoardHeader dashboardId={dashboardId} notes={notes} />
       {notes.map((note) => (
         <Note
           key={note.id}

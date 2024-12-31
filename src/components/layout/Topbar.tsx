@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/hooks/use-theme";
 import { downloadDashboard } from "@/components/board/utils/downloadUtils";
-import { AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog } from "@/components/ui/alert-dialog";
 import { BoardActions } from "@/components/board/components/BoardActions";
 import { NoteData } from "@/components/board/types";
 
@@ -40,12 +40,9 @@ export function Topbar({ notes = [], onCleanDashboard }: TopbarProps) {
             >
               <Download className="h-4 w-4" />
             </Button>
-            <BoardActions notes={notes} onCleanDashboard={onCleanDashboard} />
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
+            <AlertDialog>
+              <BoardActions notes={notes} onCleanDashboard={onCleanDashboard} />
+            </AlertDialog>
           </>
         )}
         <Button variant="ghost" size="icon" onClick={toggleTheme}>

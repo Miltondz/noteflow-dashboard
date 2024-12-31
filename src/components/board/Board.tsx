@@ -6,6 +6,19 @@ import { NoteData } from "./types";
 import { useBoardQueries } from "./hooks/useBoardQueries";
 import { getRandomStickyNoteColor } from "./utils/boardUtils";
 import { BoardHeader } from "./components/BoardHeader";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 export function Board() {
   const [notes, setNotes] = useState<NoteData[]>([]);
@@ -17,6 +30,8 @@ export function Board() {
     updatePositionMutation,
     updateContentMutation,
     deleteComponentMutation,
+    cleanDashboardMutation,
+    queryClient
   } = useBoardQueries(dashboardId);
 
   useEffect(() => {
@@ -130,6 +145,8 @@ export function Board() {
       if (error) throw error;
 
       if (data) {
+        // Invalidate the query to refresh the dashboard
+        queryClient.invalidateQueries({ queryKey: ['dashboard-components', dashboardId] });
         toast({
           title: "Success",
           description: `New ${type} added successfully!`,
@@ -181,13 +198,43 @@ export function Board() {
     handleAddNote(type, position);
   };
 
+  const handleCleanDashboard = () => {
+    if (!dashboardId) return;
+    cleanDashboardMutation.mutate(dashboardId);
+  };
+
   return (
     <div 
-      className="w-full h-full relative bg-gray-50 board"
+      className="w-full h-full relative bg-gray-50 dark:bg-gray-900 board"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
       <BoardHeader dashboardId={dashboardId} />
+      <div className="absolute top-4 right-4 z-10">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" size="sm">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Clean Dashboard
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete all components
+                from your dashboard.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleCleanDashboard}>
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
       {notes.map((note) => (
         <Note
           key={note.id}

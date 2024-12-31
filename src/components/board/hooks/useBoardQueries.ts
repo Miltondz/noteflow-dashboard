@@ -23,12 +23,12 @@ export const useBoardQueries = (dashboardId: string | null) => {
         id: component.id,
         type: component.type,
         content: component.type === 'image' 
-          ? component.content || '' // For images, keep the URL or empty string
+          ? component.content || '' 
           : component.type === 'text'
-          ? component.content || 'Start typing...' // For text components
+          ? component.content || 'Start typing...' 
           : component.type === 'document'
-          ? component.content || 'Start typing your document...' // For documents
-          : component.content || 'New note', // For sticky notes
+          ? component.content || 'Start typing your document...'
+          : component.content || 'New note',
         position: { x: component.position_x, y: component.position_y },
         isExpanded: true,
         style: component.style as Record<string, string>,
@@ -84,10 +84,37 @@ export const useBoardQueries = (dashboardId: string | null) => {
     },
   });
 
+  const cleanDashboardMutation = useMutation({
+    mutationFn: async (dashboardId: string) => {
+      const { error } = await supabase
+        .from('dashboard_components')
+        .delete()
+        .eq('dashboard_id', dashboardId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard-components', dashboardId] });
+      toast({
+        title: "Success",
+        description: "Dashboard cleaned successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to clean dashboard. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   return {
     components,
     updatePositionMutation,
     updateContentMutation,
     deleteComponentMutation,
+    cleanDashboardMutation,
+    queryClient,
   };
 };

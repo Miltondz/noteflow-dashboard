@@ -6,20 +6,7 @@ import { NoteData } from "./types";
 import { useBoardQueries } from "./hooks/useBoardQueries";
 import { getRandomStickyNoteColor } from "./utils/boardUtils";
 import { BoardHeader } from "./components/BoardHeader";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Trash2, Download } from "lucide-react";
-import { downloadDashboard } from "./utils/downloadUtils";
+import { BoardActions } from "./components/BoardActions";
 
 export function Board() {
   const [notes, setNotes] = useState<NoteData[]>([]);
@@ -211,40 +198,7 @@ export function Board() {
       onDrop={handleDrop}
     >
       <BoardHeader dashboardId={dashboardId} notes={notes} />
-      <div className="absolute top-4 right-4 z-10 flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => downloadDashboard(notes)}
-          className="bg-background border shadow-sm"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Download
-        </Button>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" size="sm">
-              <Trash2 className="h-4 w-4 mr-2" />
-              Clean Dashboard
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete all components
-                from your dashboard.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleCleanDashboard}>
-                Continue
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
+      <BoardActions notes={notes} onCleanDashboard={handleCleanDashboard} />
       {notes.map((note) => (
         <Note
           key={note.id}

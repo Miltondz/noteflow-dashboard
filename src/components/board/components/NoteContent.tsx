@@ -1,6 +1,8 @@
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { Upload } from "lucide-react";
+import { DocumentControls } from "./DocumentControls";
+import { useState } from "react";
 
 type NoteContentProps = {
   type: "sticky-note" | "document" | "image" | "text";
@@ -17,6 +19,8 @@ export function NoteContent({
   fileInputRef,
   handleImageUpload
 }: NoteContentProps) {
+  const [fontSize, setFontSize] = useState(14);
+
   if (type === "image") {
     return (
       <div 
@@ -42,23 +46,46 @@ export function NoteContent({
     );
   }
 
+  if (type === "document") {
+    const lines = content.split('\n');
+    
+    return (
+      <div className="relative w-full h-full flex">
+        <div className="bg-gray-100 dark:bg-gray-800 p-2 text-sm font-mono text-gray-500 select-none">
+          {lines.map((_, i) => (
+            <div key={i} className="text-right pr-2">
+              {i + 1}
+            </div>
+          ))}
+        </div>
+        <Textarea
+          value={content}
+          onChange={(e) => onContentChange(e.target.value)}
+          className={cn(
+            "w-full h-full resize-none border-none focus-visible:ring-0 p-2",
+            "font-serif bg-transparent leading-relaxed"
+          )}
+          placeholder="Start typing your document..."
+          style={{ fontSize: `${fontSize}px` }}
+        />
+        <DocumentControls onFontSizeChange={setFontSize} />
+      </div>
+    );
+  }
+
   return (
     <Textarea
       value={content}
       onChange={(e) => onContentChange(e.target.value)}
       className={cn(
         "w-full h-full resize-none border-none focus-visible:ring-0 p-0",
-        type === "document" && "font-serif text-sm leading-relaxed bg-transparent",
         type === "text" && "text-base leading-relaxed"
       )}
       placeholder={
         type === "sticky-note" 
           ? "Add a note..." 
-          : type === "document" 
-          ? "Start typing your document..." 
           : "Start typing..."
       }
-      style={type === "document" ? { color: "inherit" } : undefined}
     />
   );
 }

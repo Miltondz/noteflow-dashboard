@@ -18,7 +18,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Download } from "lucide-react";
+import { downloadDashboard } from "./utils/downloadUtils";
 
 export function Board() {
   const [notes, setNotes] = useState<NoteData[]>([]);
@@ -210,7 +211,16 @@ export function Board() {
       onDrop={handleDrop}
     >
       <BoardHeader dashboardId={dashboardId} notes={notes} />
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => downloadDashboard(notes)}
+          className="bg-background border shadow-sm"
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Download
+        </Button>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" size="sm">

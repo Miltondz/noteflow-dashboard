@@ -48,7 +48,7 @@ export function NoteContent({
       onChange={(e) => onContentChange(e.target.value)}
       className={cn(
         "w-full h-full resize-none border-none focus-visible:ring-0 p-0",
-        type === "document" && "font-serif text-base leading-relaxed bg-transparent",
+        type === "document" && "font-serif text-sm leading-relaxed bg-transparent",
         type === "text" && "text-base leading-relaxed"
       )}
       placeholder={

@@ -27,7 +27,9 @@ export function Note({
   onDelete
 }: NoteProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [dimensions, setDimensions] = useState({ width: type === "document" ? 384 : 256, height: type === "document" ? 384 : 256 });
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const noteRef = useRef<HTMLDivElement>(null);
@@ -35,23 +37,31 @@ export function Note({
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
+      if (!isDragging && !isResizing) return;
       
       e.preventDefault();
-      onMove(id, {
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y,
-      });
+      if (isDragging) {
+        onMove(id, {
+          x: e.clientX - dragStart.x,
+          y: e.clientY - dragStart.y,
+        });
+      } else if (isResizing && noteRef.current) {
+        const rect = noteRef.current.getBoundingClientRect();
+        const newWidth = Math.max(200, e.clientX - rect.left);
+        const newHeight = Math.max(200, e.clientY - rect.top);
+        setDimensions({ width: newWidth, height: newHeight });
+      }
     };
 
     const handleMouseUp = () => {
-      if (isDragging) {
+      if (isDragging || isResizing) {
         setIsDragging(false);
+        setIsResizing(false);
         document.body.style.userSelect = '';
       }
     };
 
-    if (isDragging) {
+    if (isDragging || isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
       document.body.style.userSelect = 'none';
@@ -62,7 +72,7 @@ export function Note({
       document.removeEventListener('mouseup', handleMouseUp);
       document.body.style.userSelect = '';
     };
-  }, [isDragging, dragStart, id, onMove]);
+  }, [isDragging, isResizing, dragStart, id, onMove]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).tagName === "TEXTAREA") return;
@@ -74,6 +84,12 @@ export function Note({
       x: e.clientX - position.x,
       y: e.clientY - position.y,
     });
+  };
+
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
   };
 
   const handleSave = async () => {
@@ -146,10 +162,12 @@ export function Note({
         "absolute p-4 shadow-lg transition-all duration-200",
         isDragging && "shadow-xl cursor-grabbing",
         !isDragging && "cursor-default",
-        type === "document" ? (isExpanded ? "w-96 h-96" : "w-48 h-48") : (isExpanded ? "w-64 h-64" : "w-32 h-32")
+        "relative"
       )}
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
+        width: `${dimensions.width}px`,
+        height: `${dimensions.height}px`,
         ...style,
       }}
       onMouseDown={handleMouseDown}
@@ -173,6 +191,13 @@ export function Note({
           handleImageUpload={handleImageUpload}
         />
       </div>
+      <div
+        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
+        onMouseDown={handleResizeStart}
+        style={{
+          background: 'linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.1) 50%)',
+        }}
+      />
     </Card>
   );
 }

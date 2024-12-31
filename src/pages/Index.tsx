@@ -2,8 +2,13 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { Board } from "@/components/board/Board";
+import { useState } from "react";
+import { NoteData } from "@/components/board/types";
 
 const Index = () => {
+  const [notes, setNotes] = useState<NoteData[]>([]);
+  const [cleanDashboardFn, setCleanDashboardFn] = useState<(() => void) | undefined>();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -20,8 +25,11 @@ const Index = () => {
           }
         }} />
         <div className="flex-1 flex flex-col">
-          <Topbar />
-          <Board />
+          <Topbar notes={notes} onCleanDashboard={cleanDashboardFn} />
+          <Board 
+            onNotesChange={setNotes} 
+            onCleanDashboardInit={setCleanDashboardFn}
+          />
         </div>
       </div>
     </SidebarProvider>

@@ -6,9 +6,13 @@ import { NoteData } from "./types";
 import { useBoardQueries } from "./hooks/useBoardQueries";
 import { getRandomStickyNoteColor } from "./utils/boardUtils";
 import { BoardHeader } from "./components/BoardHeader";
-import { BoardActions } from "./components/BoardActions";
 
-export function Board() {
+interface BoardProps {
+  onNotesChange?: (notes: NoteData[]) => void;
+  onCleanDashboardInit?: (fn: () => void) => void;
+}
+
+export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
   const [notes, setNotes] = useState<NoteData[]>([]);
   const [dashboardId, setDashboardId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -25,12 +29,19 @@ export function Board() {
   useEffect(() => {
     if (components) {
       setNotes(components);
+      onNotesChange?.(components);
     }
-  }, [components]);
+  }, [components, onNotesChange]);
 
   useEffect(() => {
     createDefaultDashboard();
   }, []);
+
+  useEffect(() => {
+    if (onCleanDashboardInit) {
+      onCleanDashboardInit(() => handleCleanDashboard);
+    }
+  }, [onCleanDashboardInit, dashboardId]);
 
   const createDefaultDashboard = async () => {
     try {
@@ -197,8 +208,7 @@ export function Board() {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <BoardHeader dashboardId={dashboardId} notes={notes} />
-      <BoardActions notes={notes} onCleanDashboard={handleCleanDashboard} />
+      <BoardHeader dashboardId={dashboardId} />
       {notes.map((note) => (
         <Note
           key={note.id}

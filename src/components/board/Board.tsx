@@ -48,11 +48,18 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
 
     const boardRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const position = {
-      x: e.clientX - boardRect.left,
-      y: e.clientY - boardRect.top,
+      x: Math.max(0, e.clientX - boardRect.left),
+      y: Math.max(0, e.clientY - boardRect.top),
     };
 
-    handleAddNote(type, position);
+    // Find the highest z-index among existing notes
+    const maxZIndex = notes.reduce((max, note) => {
+      const zIndex = note.style?.zIndex ? parseInt(note.style.zIndex) : 0;
+      return Math.max(max, zIndex);
+    }, 0);
+
+    // Add the new note with a higher z-index
+    handleAddNote(type, position, maxZIndex + 1);
   };
 
   return (

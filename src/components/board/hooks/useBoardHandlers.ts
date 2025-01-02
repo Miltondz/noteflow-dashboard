@@ -16,11 +16,26 @@ export const useBoardHandlers = (
   const { toast } = useToast();
 
   const handleNoteMove = (id: string, newPosition: { x: number; y: number }) => {
-    setNotes((prev: NoteData[]) =>
-      prev.map((note) =>
-        note.id === id ? { ...note, position: newPosition } : note
-      )
-    );
+    setNotes((prev: NoteData[]) => {
+      // Find the highest z-index among all notes
+      const maxZIndex = prev.reduce((max, note) => {
+        const zIndex = note.style?.zIndex ? parseInt(note.style.zIndex) : 0;
+        return Math.max(max, zIndex);
+      }, 0);
+
+      return prev.map((note) =>
+        note.id === id 
+          ? { 
+              ...note, 
+              position: newPosition,
+              style: { 
+                ...note.style, 
+                zIndex: (maxZIndex + 1).toString() 
+              } 
+            } 
+          : note
+      );
+    });
     
     const position_x = typeof newPosition.x === 'number' ? newPosition.x : 0;
     const position_y = typeof newPosition.y === 'number' ? newPosition.y : 0;
@@ -32,7 +47,7 @@ export const useBoardHandlers = (
     });
   };
 
-  const handleAddNote = async (type: NoteData["type"], position?: { x: number; y: number }) => {
+  const handleAddNote = async (type: NoteData["type"], position?: { x: number; y: number }, zIndex: number = 1) => {
     if (!dashboardId) {
       toast({
         title: "Error",
@@ -60,11 +75,14 @@ export const useBoardHandlers = (
             : "",
           position_x: defaultPosition.x,
           position_y: defaultPosition.y,
-          style: type === "sticky-note" 
-            ? { backgroundColor: getRandomStickyNoteColor() }
-            : type === "document" 
-            ? { backgroundColor: "#1A1F2C", color: "#ffffff" }
-            : {},
+          style: {
+            ...(type === "sticky-note" 
+              ? { backgroundColor: getRandomStickyNoteColor() }
+              : type === "document" 
+              ? { backgroundColor: "#1A1F2C", color: "#ffffff" }
+              : {}),
+            zIndex: zIndex.toString(),
+          },
         }])
         .select()
         .single();

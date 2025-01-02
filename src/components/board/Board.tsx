@@ -26,7 +26,6 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
     queryClient
   } = useBoardQueries(dashboardId);
 
-  // Transform database format to frontend format
   const transformDbToNote = (dbComponent: any): NoteData => ({
     id: dbComponent.id,
     type: dbComponent.type,
@@ -39,7 +38,6 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
     isExpanded: true,
   });
 
-  // Transform frontend format to database format
   const transformNoteToDb = (note: NoteData) => ({
     position_x: typeof note.position.x === 'number' ? note.position.x : 0,
     position_y: typeof note.position.y === 'number' ? note.position.y : 0,
@@ -262,3 +260,4 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
       ))}
     </div>
   );
+}

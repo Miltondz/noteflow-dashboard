@@ -9,5 +9,5 @@ export interface NoteData {
   content: string;
   position: Position;
   isExpanded?: boolean;
-  style?: Record<string, string>;
+  style?: Record<string, any>; // Changed from Record<string, string> to Record<string, any>
 }

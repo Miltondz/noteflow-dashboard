@@ -28,8 +28,13 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
 
   useEffect(() => {
     if (components) {
-      setNotes(components);
-      onNotesChange?.(components);
+      const formattedComponents: NoteData[] = components.map(component => ({
+        ...component,
+        position: { x: component.position_x, y: component.position_y },
+        style: component.style as Record<string, any>,
+      }));
+      setNotes(formattedComponents);
+      onNotesChange?.(formattedComponents);
     }
   }, [components, onNotesChange]);
 
@@ -142,13 +147,12 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
       if (error) throw error;
 
       if (data) {
-        // Instead of invalidating the query, update the notes state directly
-        const newNote = {
+        const newNote: NoteData = {
           id: data.id,
           type: data.type,
           content: data.content,
           position: { x: data.position_x, y: data.position_y },
-          style: data.style,
+          style: data.style as Record<string, any>,
           isExpanded: true,
         };
         setNotes(prev => [...prev, newNote]);

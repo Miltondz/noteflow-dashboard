@@ -91,7 +91,7 @@ export const useBoardHandlers = (
 
       if (data) {
         const newNote = transformDbToNote(data);
-        setNotes((prev: NoteData[]) => [...prev, newNote]);
+        setNotes(prev => [...prev, newNote]);
         onNotesChange?.([...notes, newNote]);
         
         toast({

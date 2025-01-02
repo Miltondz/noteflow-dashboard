@@ -3,6 +3,7 @@ import { NoteData } from "../types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useBoardQueries } from "./useBoardQueries";
+import { transformDbToNote } from "../utils/boardTransformers";
 
 export const useBoardState = (
   onNotesChange?: (notes: NoteData[]) => void,
@@ -22,7 +23,7 @@ export const useBoardState = (
 
   useEffect(() => {
     if (components) {
-      const formattedComponents = components.map(transformDbToNote);
+      const formattedComponents = components.map(component => transformDbToNote(component));
       setNotes(formattedComponents);
       onNotesChange?.(formattedComponents);
     }

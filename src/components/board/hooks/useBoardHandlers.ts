@@ -6,7 +6,7 @@ import { transformDbToNote } from "../utils/boardTransformers";
 
 export const useBoardHandlers = (
   notes: NoteData[],
-  setNotes: (notes: NoteData[]) => void,
+  setNotes: (notes: NoteData[] | ((prev: NoteData[]) => NoteData[])) => void,
   dashboardId: string | null,
   updatePositionMutation: any,
   updateContentMutation: any,
@@ -16,7 +16,7 @@ export const useBoardHandlers = (
   const { toast } = useToast();
 
   const handleNoteMove = (id: string, newPosition: { x: number; y: number }) => {
-    setNotes((prev) =>
+    setNotes((prev: NoteData[]) =>
       prev.map((note) =>
         note.id === id ? { ...note, position: newPosition } : note
       )
@@ -73,7 +73,7 @@ export const useBoardHandlers = (
 
       if (data) {
         const newNote = transformDbToNote(data);
-        setNotes(prev => [...prev, newNote]);
+        setNotes((prev: NoteData[]) => [...prev, newNote]);
         onNotesChange?.([...notes, newNote]);
         
         toast({
@@ -92,7 +92,7 @@ export const useBoardHandlers = (
   };
 
   const handleContentChange = (id: string, content: string) => {
-    setNotes((prev) =>
+    setNotes((prev: NoteData[]) =>
       prev.map((note) =>
         note.id === id ? { ...note, content } : note
       )
@@ -101,7 +101,7 @@ export const useBoardHandlers = (
   };
 
   const handleToggleExpand = (id: string) => {
-    setNotes((prev) =>
+    setNotes((prev: NoteData[]) =>
       prev.map((note) =>
         note.id === id ? { ...note, isExpanded: !note.isExpanded } : note
       )
@@ -109,7 +109,7 @@ export const useBoardHandlers = (
   };
 
   const handleDelete = (id: string) => {
-    setNotes(prev => prev.filter(n => n.id !== id));
+    setNotes((prev: NoteData[]) => prev.filter(n => n.id !== id));
     onNotesChange?.(notes.filter(n => n.id !== id));
     deleteComponentMutation.mutate(id);
   };

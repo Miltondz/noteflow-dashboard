@@ -117,12 +117,6 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
       return;
     }
 
-    const style = type === "sticky-note" 
-      ? { backgroundColor: getRandomStickyNoteColor() }
-      : type === "document" 
-      ? { backgroundColor: "#1A1F2C", color: "#ffffff" }
-      : {};
-
     try {
       const { data, error } = await supabase
         .from('dashboard_components')
@@ -134,9 +128,13 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
             : type === "document" 
             ? "Start typing your document..." 
             : "",
-          position_x: position?.x || Math.random() * 300,
-          position_y: position?.y || Math.random() * 300,
-          style,
+          position_x: position?.x || Math.random() * (window.innerWidth - 300),
+          position_y: position?.y || Math.random() * (window.innerHeight - 300),
+          style: type === "sticky-note" 
+            ? { backgroundColor: getRandomStickyNoteColor() }
+            : type === "document" 
+            ? { backgroundColor: "#1A1F2C", color: "#ffffff" }
+            : {},
         }])
         .select()
         .single();
@@ -144,7 +142,18 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
       if (error) throw error;
 
       if (data) {
-        queryClient.invalidateQueries({ queryKey: ['dashboard-components', dashboardId] });
+        // Instead of invalidating the query, update the notes state directly
+        const newNote = {
+          id: data.id,
+          type: data.type,
+          content: data.content,
+          position: { x: data.position_x, y: data.position_y },
+          style: data.style,
+          isExpanded: true,
+        };
+        setNotes(prev => [...prev, newNote]);
+        onNotesChange?.([...notes, newNote]);
+        
         toast({
           title: "Success",
           description: `New ${type} added successfully!`,
@@ -203,7 +212,7 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
 
   return (
     <div 
-      className="w-full h-full relative bg-gray-50 dark:bg-gray-900 board"
+      className="w-full h-full relative bg-gray-50 dark:bg-gray-900 board overflow-hidden"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
@@ -215,7 +224,12 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
           onMove={handleNoteMove}
           onContentChange={handleContentChange}
           onToggleExpand={handleToggleExpand}
-          onDelete={(id) => deleteComponentMutation.mutate(id)}
+          onDelete={(id) => {
+            // Update the state directly instead of waiting for the query invalidation
+            setNotes(prev => prev.filter(n => n.id !== id));
+            onNotesChange?.(notes.filter(n => n.id !== id));
+            deleteComponentMutation.mutate(id);
+          }}
         />
       ))}
     </div>

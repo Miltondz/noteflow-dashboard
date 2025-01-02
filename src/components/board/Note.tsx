@@ -40,11 +40,22 @@ export function Note({
       if (!isDragging && !isResizing) return;
       
       e.preventDefault();
-      if (isDragging) {
-        onMove(id, {
-          x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y,
-        });
+      if (isDragging && noteRef.current) {
+        const board = noteRef.current.closest('.board') as HTMLElement;
+        if (!board) return;
+
+        const boardRect = board.getBoundingClientRect();
+        const noteRect = noteRef.current.getBoundingClientRect();
+        
+        // Calculate new position
+        let newX = e.clientX - dragStart.x;
+        let newY = e.clientY - dragStart.y;
+        
+        // Add bounds checking
+        newX = Math.max(0, Math.min(newX, boardRect.width - noteRect.width));
+        newY = Math.max(0, Math.min(newY, boardRect.height - noteRect.height));
+        
+        onMove(id, { x: newX, y: newY });
       } else if (isResizing && noteRef.current) {
         const rect = noteRef.current.getBoundingClientRect();
         const newWidth = Math.max(200, e.clientX - rect.left);

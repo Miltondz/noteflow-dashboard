@@ -1,9 +1,9 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { Board } from "@/components/board/Board";
 import { useState } from "react";
 import { NoteData } from "@/components/board/types";
+import { Toolbar } from "@/components/board/components/Toolbar";
 
 const Index = () => {
   const [notes, setNotes] = useState<NoteData[]>([]);
@@ -13,19 +13,19 @@ const Index = () => {
     <SidebarProvider>
       <div className="min-h-screen flex flex-col w-full">
         <Topbar notes={notes} onCleanDashboard={cleanDashboardFn} />
-        <div className="flex flex-1">
-          <Sidebar onAddNote={(type, position) => {
-            const board = document.querySelector(".board") as HTMLElement;
-            if (board) {
-              if (position) {
-                const event = new CustomEvent("addNote", { detail: { type, position } });
-                board.dispatchEvent(event);
-              } else {
-                const event = new CustomEvent("addNote", { detail: { type } });
-                board.dispatchEvent(event);
-              }
+        <Toolbar onAddNote={(type, position) => {
+          const board = document.querySelector(".board") as HTMLElement;
+          if (board) {
+            if (position) {
+              const event = new CustomEvent("addNote", { detail: { type, position } });
+              board.dispatchEvent(event);
+            } else {
+              const event = new CustomEvent("addNote", { detail: { type } });
+              board.dispatchEvent(event);
             }
-          }} />
+          }
+        }} />
+        <div className="flex-1">
           <Board 
             onNotesChange={setNotes} 
             onCleanDashboardInit={setCleanDashboardFn}

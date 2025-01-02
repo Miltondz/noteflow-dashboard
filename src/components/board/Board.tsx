@@ -31,7 +31,7 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
     id: dbComponent.id,
     type: dbComponent.type,
     content: dbComponent.content,
-    position: { x: dbComponent.position_x, y: dbComponent.position_y },
+    position: { x: dbComponent.position_x || 0, y: dbComponent.position_y || 0 },
     style: dbComponent.style as Record<string, any>,
     isExpanded: true,
   });
@@ -123,6 +123,8 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
         note.id === id ? { ...note, position: newPosition } : note
       )
     );
+    
+    // Ensure we're passing position_x and position_y separately
     updatePositionMutation.mutate({
       id,
       position_x: newPosition.x,
@@ -141,6 +143,11 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
     }
 
     try {
+      const defaultPosition = {
+        x: position?.x || Math.random() * (window.innerWidth - 300),
+        y: position?.y || Math.random() * (window.innerHeight - 300)
+      };
+
       const { data, error } = await supabase
         .from('dashboard_components')
         .insert([{
@@ -151,8 +158,8 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
             : type === "document" 
             ? "Start typing your document..." 
             : "",
-          position_x: position?.x || Math.random() * (window.innerWidth - 300),
-          position_y: position?.y || Math.random() * (window.innerHeight - 300),
+          position_x: defaultPosition.x,
+          position_y: defaultPosition.y,
           style: type === "sticky-note" 
             ? { backgroundColor: getRandomStickyNoteColor() }
             : type === "document" 

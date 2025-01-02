@@ -38,12 +38,12 @@ export const useBoardQueries = (dashboardId: string | null) => {
   });
 
   const updatePositionMutation = useMutation({
-    mutationFn: async ({ id, position }: { id: string, position: { x: number, y: number } }) => {
+    mutationFn: async ({ id, position_x, position_y }: { id: string, position_x: number, position_y: number }) => {
       const { error } = await supabase
         .from('dashboard_components')
         .update({
-          position_x: position.x,
-          position_y: position.y,
+          position_x,
+          position_y,
           updated_at: new Date().toISOString(),
         })
         .eq('id', id);

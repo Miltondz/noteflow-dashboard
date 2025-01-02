@@ -11,21 +11,21 @@ const Index = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <Sidebar onAddNote={(type, position) => {
-          const board = document.querySelector(".board") as HTMLElement;
-          if (board) {
-            if (position) {
-              const event = new CustomEvent("addNote", { detail: { type, position } });
-              board.dispatchEvent(event);
-            } else {
-              const event = new CustomEvent("addNote", { detail: { type } });
-              board.dispatchEvent(event);
+      <div className="min-h-screen flex flex-col w-full">
+        <Topbar notes={notes} onCleanDashboard={cleanDashboardFn} />
+        <div className="flex flex-1">
+          <Sidebar onAddNote={(type, position) => {
+            const board = document.querySelector(".board") as HTMLElement;
+            if (board) {
+              if (position) {
+                const event = new CustomEvent("addNote", { detail: { type, position } });
+                board.dispatchEvent(event);
+              } else {
+                const event = new CustomEvent("addNote", { detail: { type } });
+                board.dispatchEvent(event);
+              }
             }
-          }
-        }} />
-        <div className="flex-1 flex flex-col">
-          <Topbar notes={notes} onCleanDashboard={cleanDashboardFn} />
+          }} />
           <Board 
             onNotesChange={setNotes} 
             onCleanDashboardInit={setCleanDashboardFn}

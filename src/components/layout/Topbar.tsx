@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Share2, Settings, LogOut, Moon, Sun, Download, Trash2 } from "lucide-react";
+import { Share2, Settings, LogOut, Moon, Sun, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/hooks/use-theme";
-import { downloadDashboard } from "@/components/board/utils/downloadUtils";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { BoardActions } from "@/components/board/components/BoardActions";
 import { NoteData } from "@/components/board/types";
@@ -24,7 +23,7 @@ export function Topbar({ notes = [], onCleanDashboard }: TopbarProps) {
 
   return (
     <div className="h-14 border-b flex items-center justify-between px-4 bg-background">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
         <h1 className="font-semibold">My Board</h1>
       </div>
       <div className="flex items-center gap-2">
@@ -32,18 +31,9 @@ export function Topbar({ notes = [], onCleanDashboard }: TopbarProps) {
           <Share2 className="h-4 w-4" />
         </Button>
         {notes && onCleanDashboard && (
-          <>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => downloadDashboard(notes)}
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-            <AlertDialog>
-              <BoardActions notes={notes} onCleanDashboard={onCleanDashboard} />
-            </AlertDialog>
-          </>
+          <AlertDialog>
+            <BoardActions notes={notes} onCleanDashboard={onCleanDashboard} />
+          </AlertDialog>
         )}
         <Button variant="ghost" size="icon" onClick={toggleTheme}>
           {theme === 'dark' ? (

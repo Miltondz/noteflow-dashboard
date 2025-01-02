@@ -31,15 +31,18 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
     id: dbComponent.id,
     type: dbComponent.type,
     content: dbComponent.content,
-    position: { x: dbComponent.position_x || 0, y: dbComponent.position_y || 0 },
+    position: { 
+      x: typeof dbComponent.position_x === 'number' ? dbComponent.position_x : 0, 
+      y: typeof dbComponent.position_y === 'number' ? dbComponent.position_y : 0 
+    },
     style: dbComponent.style as Record<string, any>,
     isExpanded: true,
   });
 
   // Transform frontend format to database format
   const transformNoteToDb = (note: NoteData) => ({
-    position_x: note.position.x,
-    position_y: note.position.y,
+    position_x: typeof note.position.x === 'number' ? note.position.x : 0,
+    position_y: typeof note.position.y === 'number' ? note.position.y : 0,
     content: note.content,
     style: note.style,
   });
@@ -124,11 +127,13 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
       )
     );
     
-    // Ensure we're passing position_x and position_y separately
+    const position_x = typeof newPosition.x === 'number' ? newPosition.x : 0;
+    const position_y = typeof newPosition.y === 'number' ? newPosition.y : 0;
+    
     updatePositionMutation.mutate({
       id,
-      position_x: newPosition.x,
-      position_y: newPosition.y,
+      position_x,
+      position_y,
     });
   };
 
@@ -144,8 +149,8 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
 
     try {
       const defaultPosition = {
-        x: position?.x || Math.random() * (window.innerWidth - 300),
-        y: position?.y || Math.random() * (window.innerHeight - 300)
+        x: typeof position?.x === 'number' ? position.x : Math.random() * (window.innerWidth - 300),
+        y: typeof position?.y === 'number' ? position.y : Math.random() * (window.innerHeight - 300)
       };
 
       const { data, error } = await supabase

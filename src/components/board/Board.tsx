@@ -26,13 +26,27 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
     queryClient
   } = useBoardQueries(dashboardId);
 
+  // Transform database format to frontend format
+  const transformDbToNote = (dbComponent: any): NoteData => ({
+    id: dbComponent.id,
+    type: dbComponent.type,
+    content: dbComponent.content,
+    position: { x: dbComponent.position_x, y: dbComponent.position_y },
+    style: dbComponent.style as Record<string, any>,
+    isExpanded: true,
+  });
+
+  // Transform frontend format to database format
+  const transformNoteToDb = (note: NoteData) => ({
+    position_x: note.position.x,
+    position_y: note.position.y,
+    content: note.content,
+    style: note.style,
+  });
+
   useEffect(() => {
     if (components) {
-      const formattedComponents: NoteData[] = components.map(component => ({
-        ...component,
-        position: { x: component.position_x, y: component.position_y },
-        style: component.style as Record<string, any>,
-      }));
+      const formattedComponents = components.map(transformDbToNote);
       setNotes(formattedComponents);
       onNotesChange?.(formattedComponents);
     }
@@ -109,7 +123,11 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
         note.id === id ? { ...note, position: newPosition } : note
       )
     );
-    updatePositionMutation.mutate({ id, position: newPosition });
+    updatePositionMutation.mutate({
+      id,
+      position_x: newPosition.x,
+      position_y: newPosition.y,
+    });
   };
 
   const handleAddNote = async (type: NoteData["type"], position?: { x: number; y: number }) => {
@@ -147,14 +165,7 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
       if (error) throw error;
 
       if (data) {
-        const newNote: NoteData = {
-          id: data.id,
-          type: data.type,
-          content: data.content,
-          position: { x: data.position_x, y: data.position_y },
-          style: data.style as Record<string, any>,
-          isExpanded: true,
-        };
+        const newNote = transformDbToNote(data);
         setNotes(prev => [...prev, newNote]);
         onNotesChange?.([...notes, newNote]);
         
@@ -229,7 +240,6 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
           onContentChange={handleContentChange}
           onToggleExpand={handleToggleExpand}
           onDelete={(id) => {
-            // Update the state directly instead of waiting for the query invalidation
             setNotes(prev => prev.filter(n => n.id !== id));
             onNotesChange?.(notes.filter(n => n.id !== id));
             deleteComponentMutation.mutate(id);

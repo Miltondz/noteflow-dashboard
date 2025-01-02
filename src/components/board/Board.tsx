@@ -148,9 +148,11 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
     }
 
     try {
-      const defaultPosition = {
-        x: typeof position?.x === 'number' ? position.x : Math.random() * (window.innerWidth - 300),
-        y: typeof position?.y === 'number' ? position.y : Math.random() * (window.innerHeight - 300)
+      // If position is provided (from drag & drop), use it directly
+      // Otherwise, calculate a random position within the visible area
+      const defaultPosition = position || {
+        x: Math.max(50, Math.random() * (window.innerWidth - 350)),
+        y: Math.max(50, Math.random() * (window.innerHeight - 350))
       };
 
       const { data, error } = await supabase
@@ -260,4 +262,3 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
       ))}
     </div>
   );
-}

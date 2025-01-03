@@ -1,8 +1,8 @@
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { NoteData } from "./types";
 import { NoteHeader } from "./components/NoteHeader";
 import { NoteContent } from "./components/NoteContent";

@@ -17,7 +17,6 @@ export const useBoardHandlers = (
 
   const handleNoteMove = (id: string, newPosition: { x: number; y: number }) => {
     setNotes((prev: NoteData[]) => {
-      // Find the highest z-index among all notes
       const maxZIndex = prev.reduce((max, note) => {
         const zIndex = note.style?.zIndex ? parseInt(note.style.zIndex) : 0;
         return Math.max(max, zIndex);
@@ -63,16 +62,20 @@ export const useBoardHandlers = (
         y: Math.max(50, Math.random() * (window.innerHeight - 350))
       };
 
+      const defaultContent = type === "sticky-note" 
+        ? "New note" 
+        : type === "document" 
+        ? "Start typing your document..." 
+        : type === "todo-list"
+        ? "[]"
+        : "";
+
       const { data, error } = await supabase
         .from('dashboard_components')
         .insert([{
           dashboard_id: dashboardId,
           type: type,
-          content: type === "sticky-note" 
-            ? "New note" 
-            : type === "document" 
-            ? "Start typing your document..." 
-            : "",
+          content: defaultContent,
           position_x: defaultPosition.x,
           position_y: defaultPosition.y,
           style: {

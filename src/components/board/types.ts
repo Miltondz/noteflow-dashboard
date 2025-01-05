@@ -5,9 +5,9 @@ export interface Position {
 
 export interface NoteData {
   id: string;
-  type: "sticky-note" | "document" | "image" | "text";
+  type: "sticky-note" | "document" | "image" | "text" | "todo-list";
   content: string;
   position: Position;
   isExpanded?: boolean;
-  style?: Record<string, any>; // Changed from Record<string, string> to Record<string, any>
+  style?: Record<string, any>;
 }

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { StickyNote, FileText, Image, Type } from "lucide-react";
+import { StickyNote, FileText, Image, Type, ListTodo } from "lucide-react";
 import { NoteData } from "../types";
 
 interface ToolbarProps {
@@ -49,6 +49,15 @@ export function Toolbar({ onAddNote }: ToolbarProps) {
         onDragStart={(e) => handleDragStart(e, "text")}
       >
         <Type className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => onAddNote("todo-list")}
+        draggable
+        onDragStart={(e) => handleDragStart(e, "todo-list")}
+      >
+        <ListTodo className="h-4 w-4" />
       </Button>
     </div>
   );

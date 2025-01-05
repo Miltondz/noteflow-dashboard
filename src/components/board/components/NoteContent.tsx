@@ -1,75 +1,55 @@
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
-import { DocumentControls } from "./DocumentControls";
-import { useState } from "react";
+import { TodoList } from "./TodoList";
 
-type NoteContentProps = {
-  type: "sticky-note" | "document" | "image" | "text";
+interface NoteContentProps {
+  type: string;
   content: string;
   onContentChange: (content: string) => void;
   fileInputRef: React.RefObject<HTMLInputElement>;
   handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-};
+}
 
 export function NoteContent({
   type,
   content,
   onContentChange,
   fileInputRef,
-  handleImageUpload
+  handleImageUpload,
 }: NoteContentProps) {
-  const [fontSize, setFontSize] = useState(14);
-
   if (type === "image") {
     return (
-      <div 
-        className="w-full h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400"
-        onClick={() => fileInputRef.current?.click()}
-      >
+      <div className="flex flex-col items-center justify-center h-full">
         {content ? (
-          <img src={content} alt="Note" className="w-full h-full object-cover" />
+          <img src={content} alt="Uploaded" className="max-w-full max-h-full object-contain" />
         ) : (
           <>
-            <Upload className="w-8 h-8 mb-2" />
-            <span>Click to upload image</span>
             <input
               type="file"
-              ref={fileInputRef}
-              className="hidden"
               accept="image/*"
               onChange={handleImageUpload}
+              ref={fileInputRef}
+              className="hidden"
             />
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="mr-2 h-4 w-4" /> Upload Image
+            </Button>
           </>
         )}
       </div>
     );
   }
 
-  if (type === "document") {
-    const lines = content.split('\n');
-    
+  if (type === "todo-list") {
     return (
-      <div className="relative w-full h-full flex">
-        <div className="bg-gray-100 dark:bg-gray-800 p-2 text-sm font-mono text-gray-500 select-none">
-          {lines.map((_, i) => (
-            <div key={i} className="text-right pr-2">
-              {i + 1}
-            </div>
-          ))}
-        </div>
-        <Textarea
-          value={content}
-          onChange={(e) => onContentChange(e.target.value)}
-          className={cn(
-            "w-full h-full resize-none border-none focus-visible:ring-0 p-2",
-            "font-serif bg-transparent leading-relaxed"
-          )}
-          placeholder="Start typing your document..."
-          style={{ fontSize: `${fontSize}px` }}
-        />
-        <DocumentControls onFontSizeChange={setFontSize} />
-      </div>
+      <TodoList
+        content={content}
+        onChange={onContentChange}
+      />
     );
   }
 
@@ -77,15 +57,8 @@ export function NoteContent({
     <Textarea
       value={content}
       onChange={(e) => onContentChange(e.target.value)}
-      className={cn(
-        "w-full h-full resize-none border-none focus-visible:ring-0 p-0",
-        type === "text" && "text-base leading-relaxed"
-      )}
-      placeholder={
-        type === "sticky-note" 
-          ? "Add a note..." 
-          : "Start typing..."
-      }
+      className="w-full h-full resize-none border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+      placeholder={type === "document" ? "Start typing your document..." : "Type your note..."}
     />
   );
 }

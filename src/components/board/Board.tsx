@@ -41,7 +41,7 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
     e.dataTransfer.dropEffect = "copy";
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     const type = e.dataTransfer.getData("application/lovable-type") as NoteData["type"];
     if (!type) return;
@@ -59,14 +59,15 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
     }, 0);
 
     // Add the new note with a higher z-index
-    handleAddNote(type, position, maxZIndex + 1);
+    await handleAddNote(type, position, maxZIndex + 1);
   };
 
   return (
     <div 
-      className="w-full h-full relative bg-gray-50 dark:bg-gray-900 board overflow-hidden"
+      className="w-full h-full relative bg-gray-50 dark:bg-gray-900 overflow-hidden"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
+      style={{ position: 'relative' }}
     >
       <BoardHeader dashboardId={dashboardId} notes={notes} />
       {notes.map((note) => (

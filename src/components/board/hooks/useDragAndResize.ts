@@ -33,15 +33,15 @@ export const useDragAndResize = ({ id, position, onMove, noteRef }: UseDragAndRe
         let newX = e.clientX - dragStart.x;
         let newY = e.clientY - dragStart.y;
         
-        // Only prevent dragging completely outside the board
-        const minX = 0;
-        const minY = 0;
-        const maxX = boardRect.width - noteRef.current.offsetWidth;
-        const maxY = boardRect.height - noteRef.current.offsetHeight;
+        // Allow components to be dragged partially outside the board
+        const minX = -noteRef.current.offsetWidth / 2;
+        const minY = -noteRef.current.offsetHeight / 2;
+        const maxX = boardRect.width - noteRef.current.offsetWidth / 2;
+        const maxY = boardRect.height - noteRef.current.offsetHeight / 2;
         
-        // Allow more flexible movement while keeping components partially visible
-        newX = Math.max(minX - noteRef.current.offsetWidth / 2, Math.min(newX, maxX + noteRef.current.offsetWidth / 2));
-        newY = Math.max(minY - noteRef.current.offsetHeight / 2, Math.min(newY, maxY + noteRef.current.offsetHeight / 2));
+        // Allow more flexible movement
+        newX = Math.max(minX, Math.min(newX, maxX));
+        newY = Math.max(minY, Math.min(newY, maxY));
         
         onMove(id, { x: newX, y: newY });
       } else if (isResizing && noteRef.current) {

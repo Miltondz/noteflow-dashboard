@@ -28,13 +28,19 @@ export const useDragAndResize = ({ id, position, onMove, noteRef }: UseDragAndRe
         if (!board) return;
 
         const boardRect = board.getBoundingClientRect();
-        const noteRect = noteRef.current.getBoundingClientRect();
         
+        // Calculate new position without restrictions
         let newX = e.clientX - dragStart.x;
         let newY = e.clientY - dragStart.y;
         
-        newX = Math.max(0, Math.min(newX, boardRect.width - noteRect.width));
-        newY = Math.max(0, Math.min(newY, boardRect.height - noteRect.height));
+        // Only prevent dragging completely outside the board
+        const minX = -noteRef.current.offsetWidth / 2;
+        const minY = -noteRef.current.offsetHeight / 2;
+        const maxX = boardRect.width - noteRef.current.offsetWidth / 2;
+        const maxY = boardRect.height - noteRef.current.offsetHeight / 2;
+        
+        newX = Math.max(minX, Math.min(newX, maxX));
+        newY = Math.max(minY, Math.min(newY, maxY));
         
         onMove(id, { x: newX, y: newY });
       } else if (isResizing && noteRef.current) {

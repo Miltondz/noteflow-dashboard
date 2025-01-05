@@ -72,9 +72,9 @@ export const useBoardHandlers = (
 
       const { data, error } = await supabase
         .from('dashboard_components')
-        .insert([{
+        .insert({
           dashboard_id: dashboardId,
-          type: type,
+          type,
           content: defaultContent,
           position_x: defaultPosition.x,
           position_y: defaultPosition.y,
@@ -86,7 +86,7 @@ export const useBoardHandlers = (
               : {}),
             zIndex: zIndex.toString(),
           },
-        }])
+        })
         .select()
         .single();
 

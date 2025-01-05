@@ -97,7 +97,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      component_type: "sticky-note" | "document" | "image" | "text"
+      component_type:
+        | "sticky-note"
+        | "document"
+        | "image"
+        | "text"
+        | "todo-list"
     }
     CompositeTypes: {
       [_ in never]: never

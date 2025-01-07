@@ -95,7 +95,9 @@ export const useBoardHandlers = (
       if (data) {
         const newNote = transformDbToNote(data);
         setNotes(prev => [...prev, newNote]);
-        onNotesChange?.([...notes, newNote]);
+        if (onNotesChange) {
+          onNotesChange([...notes, newNote]);
+        }
         
         toast({
           title: "Success",
@@ -109,6 +111,7 @@ export const useBoardHandlers = (
         description: "Failed to add note. Please try again.",
         variant: "destructive",
       });
+      throw error; // Re-throw to be caught by the caller
     }
   };
 

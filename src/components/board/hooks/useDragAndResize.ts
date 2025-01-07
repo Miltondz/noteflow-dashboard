@@ -24,7 +24,7 @@ export const useDragAndResize = ({ id, position, onMove, noteRef }: UseDragAndRe
       
       e.preventDefault();
       if (isDragging && noteRef.current) {
-        const board = noteRef.current.closest('.board') as HTMLElement;
+        const board = noteRef.current.parentElement as HTMLElement;
         if (!board) return;
 
         const boardRect = board.getBoundingClientRect();
@@ -74,15 +74,15 @@ export const useDragAndResize = ({ id, position, onMove, noteRef }: UseDragAndRe
   }, [isDragging, isResizing, dragStart, id, onMove, noteRef]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).tagName === "TEXTAREA") return;
-    if (!(e.target as HTMLElement).closest('.note-header')) return;
-    
-    e.preventDefault();
-    setIsDragging(true);
-    setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
-    });
+    // Allow dragging from any part of the note header
+    if ((e.target as HTMLElement).closest('.note-header')) {
+      e.preventDefault();
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - position.x,
+        y: e.clientY - position.y,
+      });
+    }
   };
 
   const handleResizeStart = (e: React.MouseEvent) => {

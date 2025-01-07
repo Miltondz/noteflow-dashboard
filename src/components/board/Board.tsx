@@ -59,7 +59,6 @@ export function Board({ onNotesChange, onCleanDashboardInit }: BoardProps) {
     }, 0);
 
     try {
-      // Add the new note with a higher z-index
       await handleAddNote(type, position, maxZIndex + 1);
     } catch (error) {
       console.error('Error adding note:', error);

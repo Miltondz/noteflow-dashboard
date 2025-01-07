@@ -23,25 +23,11 @@ export const useDragAndResize = ({ id, position, onMove, noteRef }: UseDragAndRe
       if (!isDragging && !isResizing) return;
       
       e.preventDefault();
+      
       if (isDragging && noteRef.current) {
-        const board = noteRef.current.parentElement as HTMLElement;
-        if (!board) return;
-
-        const boardRect = board.getBoundingClientRect();
-        
-        // Calculate new position with more flexible boundaries
-        let newX = e.clientX - dragStart.x;
-        let newY = e.clientY - dragStart.y;
-        
-        // Allow components to be dragged with minimal restrictions
-        const minX = -noteRef.current.offsetWidth / 2;
-        const minY = -noteRef.current.offsetHeight / 2;
-        const maxX = boardRect.width + noteRef.current.offsetWidth / 2;
-        const maxY = boardRect.height + noteRef.current.offsetHeight / 2;
-        
-        // Apply less restrictive boundaries
-        newX = Math.max(minX, Math.min(newX, maxX));
-        newY = Math.max(minY, Math.min(newY, maxY));
+        // Calculate new position without strict boundaries
+        const newX = e.clientX - dragStart.x;
+        const newY = e.clientY - dragStart.y;
         
         onMove(id, { x: newX, y: newY });
       } else if (isResizing && noteRef.current) {
@@ -74,7 +60,7 @@ export const useDragAndResize = ({ id, position, onMove, noteRef }: UseDragAndRe
   }, [isDragging, isResizing, dragStart, id, onMove, noteRef]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    // Allow dragging from any part of the note header
+    // Only allow dragging from the note header
     if ((e.target as HTMLElement).closest('.note-header')) {
       e.preventDefault();
       setIsDragging(true);
